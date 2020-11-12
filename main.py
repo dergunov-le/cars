@@ -9,6 +9,7 @@ GRAY = (128, 128, 128)
 GREEN = (0, 128, 0)
 WHEIT = (200, 200, 200)
 block = False
+car_accident = 0
 
 pg.init()
 pg.display.set_caption('Rally')
@@ -19,6 +20,10 @@ clock = pg.time.Clock()
 
 cars = [pg.image.load('Image/car1.png'), pg.image.load('Image/car2.png'),
         pg.image.load('Image/car3.png')]
+sound_car_accident = pg.mixer.Sound('sound/udar.wav')
+font = pg.font.Font(None, 32)
+startb = pg.image.load('image/start_button.png')
+stopb = pg.image.load('image/stop_button.png')
 
 
 class Player(pg.sprite.Sprite):
@@ -143,23 +148,37 @@ while n < 6:
 
 all_sprite.add(cars_group, player)
 
+
+def screen1():
+    sc = pg.Surface(screen.get_size())
+    sc.fill(pg.Color('purple'))
+
+    screen.blit(sc, (0, 0))
+
+
 game = True
 while game:
     for e in pg.event.get():
         if e.type == pg.QUIT:
             game = False
+        elif e.type == pg.MOUSEBUTTONDOWN:
+            if e.button == 1:
+                if startb.collidepoint(e.pos):
+                    pass
 
     if pg.sprite.spritecollideany(player, cars_group):
         if not block:
             player.position[0] += 50 * random.randrange(-1, 2, 2)
             player.angle = 50 * random.randrange(-1, 2, 2)
+            sound_car_accident.play()
+            car_accident += 1
             block = True
         else:
             block = False
 
-
     all_sprite.update()
     all_sprite.draw(screen)
+    screen.blit(font.render(f'{car_accident = }',  1,  GREEN),  (45, 10))
     pg.display.update()
     clock.tick(FPS)
     pg.display.set_caption(f'Rally   FPS: {int(clock.get_fps())}')
