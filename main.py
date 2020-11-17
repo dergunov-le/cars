@@ -10,6 +10,7 @@ GREEN = (0, 128, 0)
 WHEIT = (200, 200, 200)
 block = False
 car_accident = 0
+scr1 = True
 
 pg.init()
 pg.display.set_caption('Rally')
@@ -20,10 +21,14 @@ clock = pg.time.Clock()
 
 cars = [pg.image.load('Image/car1.png'), pg.image.load('Image/car2.png'),
         pg.image.load('Image/car3.png')]
+startb = pg.image.load('Image/start_button.png')
+startb_rect = startb.get_rect(center=(WIDTH // 2 - 220, HEIGHT // 2 + 190))
+stopb = pg.image.load('Image/stop_button.png')
+stopb_rect = stopb.get_rect(center=(WIDTH // 2 + 220, HEIGHT // 2 + 190))
+startfon = pg.image.load('Image/startfon.jpg')
+startfon_rect = startfon.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 sound_car_accident = pg.mixer.Sound('sound/udar.wav')
 font = pg.font.Font(None, 32)
-startb = pg.image.load('image/start_button.png')
-stopb = pg.image.load('image/stop_button.png')
 
 
 class Player(pg.sprite.Sprite):
@@ -60,17 +65,17 @@ class Player(pg.sprite.Sprite):
         else:
             self.velocity.x = 0
             if self.angle < 0:
-               self.angle += 1
+                self.angle += 1
             elif self.angle > 0:
                 self.angle -= 1
         if keys[pg.K_UP]:
             self.velocity.y -= self.acceleration
             if self.velocity.y < -self.speed:
-               self.velocity.y = -self.speed
+                self.velocity.y = -self.speed
         elif keys[pg.K_DOWN]:
             self.velocity.y += self.acceleration
             if self.velocity.y > self.speed:
-               self.velocity.y = self.speed
+                self.velocity.y = self.speed
         else:
             if self.velocity.y < 0:
                 self.velocity.y += self.acceleration
@@ -94,6 +99,7 @@ class Car(pg.sprite.Sprite):
         self.rect.y += self.speed
         if self.rect.top >= HEIGHT:
             self.rect.bottom = 0
+
             list_x.remove(self.rect.centerx)
             while True:
                 self.rect.centerx = random.randrange(80, WIDTH, 80)
@@ -103,8 +109,6 @@ class Car(pg.sprite.Sprite):
                     list_x.append(self.rect.centerx)
                     self.speed = random.randint(2, 3)
                     break
-
-
 
 
 class Road(pg.sprite.Sprite):
@@ -129,6 +133,7 @@ class Road(pg.sprite.Sprite):
         if self.rect.top >= HEIGHT:
             self.rect.bottom = 0
 
+
 all_sprite = pg.sprite.Group()
 cars_group = pg.sprite.Group()
 for r in range(2):
@@ -143,7 +148,7 @@ while n < 6:
         continue
     else:
         list_x.append(x)
-        cars_group.add(Car(x, cars[0].get_height(), random.choice(cars)))
+        cars_group.add(Car(x, -cars[0].get_height(), random.choice(cars)))
         n += 1
 
 all_sprite.add(cars_group, player)
@@ -151,8 +156,10 @@ all_sprite.add(cars_group, player)
 
 def screen1():
     sc = pg.Surface(screen.get_size())
-    sc.fill(pg.Color('purple'))
-
+    # sc.fill(pg.Color('navy'))
+    sc.blit(startfon, startfon_rect)
+    sc.blit(startb, startb_rect)
+    sc.blit(stopb, stopb_rect)
     screen.blit(sc, (0, 0))
 
 
@@ -163,8 +170,10 @@ while game:
             game = False
         elif e.type == pg.MOUSEBUTTONDOWN:
             if e.button == 1:
-                if startb.collidepoint(e.pos):
-                    pass
+                if startb_rect.collidepoint(e.pos):
+                    scr1 = False
+                if stopb_rect.collidepoint(e.pos):
+                    game = False
 
     if pg.sprite.spritecollideany(player, cars_group):
         if not block:
@@ -173,12 +182,17 @@ while game:
             sound_car_accident.play()
             car_accident += 1
             block = True
-        else:
-            block = False
+    else:
+        block = False
 
-    all_sprite.update()
-    all_sprite.draw(screen)
-    screen.blit(font.render(f'{car_accident = }',  1,  GREEN),  (45, 10))
+    if scr1:
+        screen1()
+    else:
+        all_sprite.update()
+        all_sprite.draw(screen)
+        screen.blit(font.render(f'{car_accident = }', 1, GREEN), (45, 10))
+    # <==
+
     pg.display.update()
     clock.tick(FPS)
     pg.display.set_caption(f'Rally   FPS: {int(clock.get_fps())}')
